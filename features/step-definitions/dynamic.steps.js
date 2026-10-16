@@ -31,7 +31,9 @@ When('I start the loading process', async () => {
 
 When('I enable the input', async () => {
     await (await $('#input-example button')).click();
-    await (await $('#input-example input')).waitForEnabled({
+    await (
+        await $('#input-example input')
+    ).waitForEnabled({
         timeout: 15_000,
         timeoutMsg: 'input never became enabled',
     });
@@ -39,7 +41,9 @@ When('I enable the input', async () => {
 
 When('I remove the checkbox', async () => {
     await (await $('#checkbox-example button')).click();
-    await (await $('#checkbox input')).waitForExist({
+    await (
+        await $('#checkbox input')
+    ).waitForExist({
         timeout: 15_000,
         reverse: true,
         timeoutMsg: 'checkbox was never removed from the DOM',

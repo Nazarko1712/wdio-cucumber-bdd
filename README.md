@@ -9,12 +9,12 @@ the framework adapter swapped and nothing else.
 
 ## Prerequisites
 
-| Requirement | Notes |
-|---|---|
-| **Node.js 20.18.1+** | pinned to 22 in `.nvmrc` |
-| **Chrome** | WebdriverIO downloads a matching Chrome for Testing and driver automatically |
-| **Network access** | `the-internet.herokuapp.com` |
-| **Allure CLI** | only for `npm run report` |
+| Requirement          | Notes                                                                        |
+| -------------------- | ---------------------------------------------------------------------------- |
+| **Node.js 20.18.1+** | pinned to 22 in `.nvmrc`                                                     |
+| **Chrome**           | WebdriverIO downloads a matching Chrome for Testing and driver automatically |
+| **Network access**   | `the-internet.herokuapp.com`                                                 |
+| **Allure CLI**       | only for `npm run report`                                                    |
 
 ## Setup
 
@@ -60,18 +60,18 @@ reports undefined steps in seconds instead of after a full browser run.
 To make one claim concrete instead of theoretical:
 
 > WebdriverIO ships its **own testrunner**. It owns browser sessions, worker
-> processes and parallelism, and delegates only the *"how tests are written"*
+> processes and parallelism, and delegates only the _"how tests are written"_
 > layer to a framework adapter.
 
 Here is the entire difference between this project and the Mocha one:
 
-| | `wdio-typescript-e2e` | `wdio-cucumber-bdd` |
-|---|---|---|
-| adapter | `@wdio/mocha-framework` | `@wdio/cucumber-framework` |
-| config | `framework: 'mocha'` | `framework: 'cucumber'` |
-| options | `mochaOpts` | `cucumberOpts` |
-| tests | `*.spec.ts` | `*.feature` + step definitions |
-| language | TypeScript | JavaScript |
+|          | `wdio-typescript-e2e`   | `wdio-cucumber-bdd`            |
+| -------- | ----------------------- | ------------------------------ |
+| adapter  | `@wdio/mocha-framework` | `@wdio/cucumber-framework`     |
+| config   | `framework: 'mocha'`    | `framework: 'cucumber'`        |
+| options  | `mochaOpts`             | `cucumberOpts`                 |
+| tests    | `*.spec.ts`             | `*.feature` + step definitions |
+| language | TypeScript              | JavaScript                     |
 
 The runner, the worker model, `maxInstances`, capabilities, retry policy,
 reporters and the **page object layer** are unchanged. The page objects in
@@ -80,13 +80,13 @@ the interaction layer underneath does not know which adapter is running.
 
 ## Gherkin constructs covered
 
-| Construct | Where | What it is for |
-|---|---|---|
-| `Background` | `authentication.feature` | a Given shared by every scenario in the feature |
-| `Scenario Outline` + `Examples` | rejected sign-ins | one scenario body, a table of inputs — expanded into one scenario per row |
-| `Data Table` | control states | structured input to a **single** step |
-| Tags | `@auth`, `@smoke`, `@dynamic` | slicing the run without touching code |
-| Cucumber expressions | `{string}` parameters | one definition backing every Examples row |
+| Construct                       | Where                         | What it is for                                                            |
+| ------------------------------- | ----------------------------- | ------------------------------------------------------------------------- |
+| `Background`                    | `authentication.feature`      | a Given shared by every scenario in the feature                           |
+| `Scenario Outline` + `Examples` | rejected sign-ins             | one scenario body, a table of inputs — expanded into one scenario per row |
+| `Data Table`                    | control states                | structured input to a **single** step                                     |
+| Tags                            | `@auth`, `@smoke`, `@dynamic` | slicing the run without touching code                                     |
+| Cucumber expressions            | `{string}` parameters         | one definition backing every Examples row                                 |
 
 **Outline versus Data Table** is a real interview question: use an Outline when
 each row is its own scenario with its own pass/fail, and a Data Table when the
@@ -110,7 +110,7 @@ definition file and a page object. Every sentence in the feature only works if a
 matching pattern exists in the steps.
 
 **A typo in Gherkin is not a compile error.** With the default
-`strict: false`, an unmatched sentence is reported as *undefined* and the
+`strict: false`, an unmatched sentence is reported as _undefined_ and the
 scenario is **skipped** — producing a green run that tested nothing. This config
 sets `strict: true` deliberately, and that is the single most important line in
 it.
@@ -151,3 +151,46 @@ Scenario state is kept in module scope rather than on Cucumber's `World`, which
 would require `function` callbacks instead of arrows. Safe here because each
 worker process runs one scenario at a time — and stated explicitly, since the
 alternative assumption silently breaks under a different worker model.
+
+## Linting and reports
+
+```bash
+npm run lint          # ESLint 9, flat config
+npm run lint:fix
+npm run format        # Prettier, writes
+npm run format:check  # Prettier, reports (this is what CI runs)
+npm run report        # generate and open the Allure report
+```
+
+This repo is plain JavaScript on purpose — it is the JS counterpart to the
+TypeScript WebdriverIO project, so the two can be compared directly. That choice
+has a concrete cost, and it is a better argument for TypeScript in a test suite
+than "types catch typos":
+
+**`no-floating-promises` cannot exist without a compiler.** Deciding whether an
+expression is a Promise requires type information, so the single rule that
+catches an un-awaited assertion — a test that passes having verified nothing —
+is simply unavailable here. `eslint-plugin-wdio`'s hand-written `await-expect`
+covers the one case it knows about, and nothing covers the rest.
+
+| Rule                | What it catches                                        |
+| ------------------- | ------------------------------------------------------ |
+| `wdio/await-expect` | a missing `await` on an `expect-webdriverio` assertion |
+| `wdio/no-pause`     | a fixed sleep instead of the actual condition          |
+| `wdio/no-debug`     | a leftover `browser.debug()` that blocks CI            |
+
+### Reports
+
+Allure, the same as the TypeScript project, so the two runs are comparable
+artifact-for-artifact. `npm run report` generates and opens it.
+
+### Where this runs in CI
+
+Linting and formatting are their **own job**, not steps inside the test job.
+They need no browser, no network and no secrets, and they finish in seconds, so
+as a separate job they run concurrently with the suite: a formatting failure
+does not wait behind a long test run, and a real test failure is not hidden
+behind a formatting failure. Both verdicts arrive on their own.
+
+CI runs the `--check` variants, never the formatter itself. A pipeline reports
+on the branch it was asked to verify; it does not rewrite it.
