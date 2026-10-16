@@ -2,7 +2,7 @@
   "name": "wdio-cucumber-bdd",
   "version": "1.0.0",
   "private": true,
-  "description": "WebdriverIO + Cucumber BDD in JavaScript — the same runner as the Mocha project with the framework adapter swapped, to show what the Gherkin layer costs and buys",
+  "description": "WebdriverIO + Cucumber BDD in JavaScript \u2014 the same runner as the Mocha project with the framework adapter swapped, to show what the Gherkin layer costs and buys",
   "type": "module",
   "engines": {
     "node": ">=20.18.1"
@@ -17,7 +17,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -31,6 +32,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-wdio": "^9.31.3",
     "globals": "^17.13.0",
+    "husky": "^9.1.7",
     "prettier": "^3.9.10"
   }
 }
